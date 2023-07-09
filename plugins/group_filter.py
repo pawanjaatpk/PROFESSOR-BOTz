@@ -71,7 +71,7 @@ async def g_fil_mod(client, message):
           await m.edit("𝚄𝚂𝙴 :- `/g_filter on` 𝙾𝚁 `/g_filter off`")
 
 
-@Client.on_callback_query(filters.regex("next"))
+@Client.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("next")))
 async def next_page(bot, query):
     ident, req, key, offset = query.data.split("_")
     if int(req) not in [query.from_user.id, 0]:
@@ -80,9 +80,9 @@ async def next_page(bot, query):
         offset = int(offset)
     except:
         offset = 0
-    search = temp.BUTTONS.get(key)
+    search = temp.GP_BUTTONS.get(key)
     if not search:
-        await query.answer("You are using one of my old messages, please send the request again.", show_alert=True)
+        await query.answer("🤔 You are using one of my old messages, please send the request again.", show_alert=True)
         return
 
     files, n_offset, total = await get_search_results(search, offset=offset, filter=True)
@@ -142,14 +142,14 @@ async def next_page(bot, query):
     await query.answer()
 
 
-@Client.on_callback_query(filters.regex("spolling"))
+@Client.on_callback_query(filters.create(lambda _, __, query: query.data.startswith("spolling")))
 async def advantage_spoll_choker(bot, query):
     _, user, movie_ = query.data.split('#')
     if int(user) != 0 and query.from_user.id != int(user):
         return await query.answer("okDa", show_alert=True)
     if movie_ == "close_spellcheck":
         return await query.message.delete()
-    movies = SPELL_CHECK.get(query.message.reply_to_message.id)
+    movies = temp.GP_SPELL.get(query.message.reply_to_message.id)
     if not movies:
         return await query.answer("You are clicking on an old button which is expired.", show_alert=True)
     movie = movies[(int(movie_))]
@@ -228,7 +228,7 @@ async def auto_filter(client, msg, spoll=False):
 
     if offset != "":
         key = f"{message.chat.id}-{message.id}"
-        temp.BUTTONS[key] = search
+        temp.GP_BUTTONS[key] = search
         req = message.from_user.id if message.from_user else 0
         btn.append(
             [InlineKeyboardButton(text=f"📄 𝗣𝗮𝗴𝗲 1/{math.ceil(int(total_results) / 6)}", callback_data="pages"),
@@ -344,7 +344,7 @@ async def advantage_spell_chok(msg):
         await asyncio.sleep(8)
         await k.delete()
         return
-    SPELL_CHECK[msg.id] = movielist
+    temp.GP_SPELL[msg.id] = movielist
     btn = [[
         InlineKeyboardButton(
             text=movie.strip(),
